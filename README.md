@@ -3,7 +3,7 @@ Here are some frontend examples for productive, rapid use of HTMX.
 
 To begin with I developed a simple TOML "Editor" by working on simple HTML Textarea 
 
-###But why?
+### But why?
 
 I was tired of creating front end input boxes, checkboxes, etc and the complications
 and time involved in them. Then I thought how about emulating a simple ruled paper?
