@@ -23,6 +23,13 @@ Read ALL the comments and I think you should be good to go.
 This HTMX-TOML editor is quite useful for Pocketbase servers. I can 
 create and update Pocketbase collections records quite well with this.
 It is agnostic to the database structure one may use at the server.
+In fact, it is agnostic to Pocketbase too frankly -- it should work 
+especially well with any backend that accepts intricate 
+JSON for creating/updating database records.  
+
+I mentioned Pocketbase because that is one technology I really like 
+and this was tested in that backend: I can easily get back to the 
+rest of the things I do, instead of being stuck in coding.
 
 I will create other kinds of front-ends too; as and when I get the time.
 
