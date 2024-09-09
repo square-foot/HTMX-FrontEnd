@@ -13,7 +13,7 @@ a ruled paper and enter the data systematically one below the other on those lin
 So as a start, here is a simple method by which the user can send a TOML data 
 to a server -- and TOML is quite good to capture a lot of complex JSON obj.
 
-According to me, this simple and quite useful. Your experience may vary.
+According to me, this is simple and quite useful. Your experience may vary.
 This was written in a day, and so expect some errors. But I think I have
 tested this reasonably well. Your experience may vary.
 
