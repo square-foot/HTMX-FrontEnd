@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTMX-TOML Editor Example</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
+       
+    <style>
+      .container {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      height: 100%;
+    }
+
+    .left-textarea {
+      width: 150px; /* Adjust the width as needed */
+      height: 100%; /* Height is 100% of the container */
+      text-align: right;
+      padding-right: 10px; /* Adjust the padding as needed */
+      overflow-y: hidden;
+      border: none;
+      user-select: none; /* Prevent text selection */
+      resize: none; /*Prevent resizing*/
+      white-space: pre-wrap; /* Preserve line breaks */
+      line-height: 31px;
+      font-family: arial;
+      font-size: 12px;
+      position: relative; top: 9px;
+    }
+
+    .tomlobj {
+     
+        width: 100%;
+      display: inline;
+      background-color: gray;
+      color: beige;
+      padding: 2px;
+            }
+
+   .right-textarea {
+      width: 250px; 
+      text-align: left;
+      padding-left: 10px; 
+      overflow-y: scroll;
+      background-attachment: local;
+      background-image:
+        linear-gradient(to right, white 10px, transparent 10px),
+        linear-gradient(to left, white 10px, transparent 10px),
+        repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px); 
+      background-repeat: no-repeat;
+      line-height: 31px;
+      padding: 8px 10px;
+      background-repeat: space;
+      font-family: arial;
+      font-size: 12px;
+      } 
+   
+   
+       #error {
+        background-color: red;
+        color: yellow;
+       }
+  
+    </style>
+    
+</head>
+<body>
+  <h3>HTMX-TOML TextArea Editor (c) Sabu Francis, 2024 - MIT License. Version 0.1</h3>
+   <small><i>Read the 'README.md file to know the 'why'...and Luke, get to the source and read the comments in the HTML to get the force!</i></small>
+    <!--
+    The 'error' element is optional. It is upto you on how your server handles 
+    errors at the server backend. In my case, my server returns a hx-Retarget header
+    to retarget a message to this element instead of the one given as hx-target
+    in the submit button
+   -->
+   <div id="error"></div>
+
+   <form >
+    <div class="container">
+      <!--
+        The left side div has to match perfectly to the right side textarea
+        else the Ux will be confusing; as the TOML fieldnames's labels 
+        have to line up with the ruled lines on the right side textarea.
+      -->
+      <div class="left-textarea" id="theleft"></div>
+      <!--the TOML textarea has to be inside a span, which is the hx-target -->
+      <span id="tst">
+         <!--the name of the textarea has to be 'toml'-->
+        <textarea name="toml" id="toml2" class="right-textarea"></textarea>
+      </span>
+    </div>
+ 
+    
+    <!--
+      In this example; the submission to HTMX enabled server 
+      is happening via a Form Submit button.
+
+      The id for the submit button is optional 
+    
+      onclick must be set to hxchg(id1,id2);
+    
+        and 
+
+      hx-on::after-request must be set to hxupd(id1,id2);
+
+      In both cases, id1 is the id  of the leftside DIV of the textarea
+      and id2 is the id of the rightside  textearea
+      
+      The HTMX action was hx-put for the update of a record at a Pocketbase collection
+      on my backend, but I am sure this should work even for hx-post
+      for creating a new record too! 
+
+      My server simply returns back an HTMX <texarea> fragment (with no attributes) 
+      containing the new TOML data which gets entered into the calling HTMX-TOML editor. 
+
+      This was tested on my server: My request is please do not attempt to discover 
+      which server of mine was this tested on!
+    
+    -->
+
+    <button type="submit"  
+            id="sub"
+            onclick="hxchg('theleft','toml2');"
+            hx-put="/api/v1/update/ycvdh8cczlvx1jn/zdocumentation"
+            hx-target="#tst"
+            hx-on::before-request="validate(event,'toml2');"
+            hx-on::after-request="hxupd('theleft','toml2');"
+            >Submit</button>
+           <!--
+               hx-on::before-request event is optional. 
+               The validate(...) function is written by you, if you want to validate 
+               before submit. If you want to abort the submission during the validation
+               you can simply call event.preventDefault(); in that function.
+               Of course if you abort, you need to give an alert to the user else he/she 
+               will be perplexed why nothing seemed to happen!
+            -->
+            
+  </form>
+ 
+  <br/>
+  <!--You can have multiple HTMX-TOML editors on the same page-->
+            
+  <form >
+    <div class="container">
+      <div class="left-textarea" id="theleft2"></div>
+      <span id="tst2">
+        <!--the name of the textarea has to be 'toml'-->
+        <textarea name="toml" id="toml3" class="right-textarea"></textarea>
+      </span>
+    </div>
+ 
+    <button type="submit"  
+            onclick="hxchg('theleft2','toml3');"
+            hx-put="/api/v1/update/ycvdh8cczlvx1jn/zdocumentation"
+            hx-target="#tst2"
+            
+            hx-on::after-request="hxupd('theleft2','toml3');"
+            >Submit</button>
+            <!--in this example, there is no validation done on the data-->
+  </form>
+ 
+  <script>
+
+  let hxchg
+  let hxupd;
+
+  
+//This is the main function for this utility to setup a texteditor to become an HTXM-TOML editor   
+let htmxTOMLJsonForm = function (initContents,containerId,theleft,theright,replaceLabelFunc,helpFunc,insertData=false){
+
+       const pollInterval = 100; // Check every 100ms
+       let obj;
+
+       
+       hxupd = function (theleftHere,therightHere) {
+       
+        
+        let therightTextarea = document.getElementById(therightHere);
+        let theleftTextarea = document.getElementById(theleftHere);
+
+       
+        obj = reconstructLeftSide(therightTextarea.value,therightHere);
+      
+        //Note that when the HTMX returns the TOML string it may 
+        //not be in the same format as the one that was sent 
+        //but you need not worry. The left side labels are cleverly remade! 
+        remakeLeft(obj,theleftTextarea)
+
+        therightTextarea.value = obj.rightLines.join("\n");
+      
+        //a small timeout is needed, as HTMX is still doing some stuff!
+        setTimeout(() => {
+        
+        //recreate the rightTextarea object and remake the event Listners 
+        //as the element was destroyed by HTMX and recreated
+               
+        theleftTextarea.style.height = therightTextarea.style.height = obj.rightLines.length*31 + 'px'; 
+        updateStyles(therightTextarea,obj.rightLines.length);
+        
+        theleftTextarea.scrollTop = therightTextarea.scrollTop;
+        
+        
+        therightTextarea.addEventListener('keydown', function(event){
+            changeKeyBehaviour(event,therightHere);
+        });
+
+        therightTextarea.addEventListener('paste', function(event){
+          checkPaste(event,therightHere);
+        });
+
+        }, 200)
+
+     
+    }
+
+    hxchg = function (theleftHere,therightHere) {
+       
+        const toml= generateTOMLString(theleftHere,therightHere);
+        const newTextarea = document.getElementById(therightHere); 
+        newTextarea.value = toml;
+        event.preventDefault();
+        return false;
+
+    }
+
+
+
+
+       function syncDivToTextarea(rightElem) {
+    // Adjust the div's height to match the textarea
+
+        let x = rightElem.parentElement.parentElement;
+        let lef = x.querySelector(".left-textarea");
+        
+        let leftTextareaHere = document.getElementById(lef.id);
+        let rightTextareaHere = document.getElementById(rightElem.id); 
+ 
+        leftTextareaHere.style.height = `${rightTextareaHere.offsetHeight}px`;
+      }
+      
+
+
+      document.getElementById(theright).addEventListener('input', (event)=> {
+          let right = event.target;
+          syncDivToTextarea(right);
+         
+          });
+      document.getElementById(theright).addEventListener('mouseup',(event)=> {
+          let right = event.target;
+          syncDivToTextarea(right);
+          
+          });
+
+     document.getElementById(theright).addEventListener('scroll', (event) => {
+        let right = event.target;
+         
+         syncDivToTextarea(right);
+       
+         let leftTextareaHere = document.querySelector(`#${right.parentElement.id} div` );
+         
+         leftTextareaHere.scrollTop = right.scrollTop;
+      });
+
+
+
+      function generateTOMLString(leftTextareaId,rightTextareaId) {
+
+       let leftTextareaHere = document.getElementById(leftTextareaId );
+       let rightTextareaHere = document.getElementById(rightTextareaId);
+
+
+       const leftLines = leftTextareaHere.innerText.trim().split('\n');
+       const rightLines = rightTextareaHere.value.trim().split('\n');
+
+      const tomlLines = [];
+      for (let i = 0; i < leftLines.length; i++) {
+        const rightText = rightLines[i];
+        let leftText = leftLines[i].trim().replaceAll('<br/>', '');
+      
+        leftText = replaceLabelFunc( leftText,rightTextareaId,false);
+        if(!(leftText.startsWith("[") && leftText.endsWith("]"))) {
+          tomlLines.push(  
+            leftText
+          + "="   
+          +  rightText);
+        } else {
+          tomlLines.push(leftText);
+        }
+        
+      }
+
+      const tomlString = tomlLines.join('\n');
+      alert(tomlString);
+
+      return tomlString;
+    }
+
+    function reconstructLeftSide(tomlString,therightareaid) {
+      const tomlLines = tomlString.split('\n');
+      const leftLines = [];
+      const rightLines = [];
+
+      tomlLines.forEach(line => {
+        const match = line.match(/^(\[.*\])?\s*([^=]+)(?:\s*=\s*(.+))?$/);
+        if (match) {
+          let leftPart = match[2].trim();
+          const rightPart = match[3] ? match[3].trim() : '';
+          leftPart = replaceLabelFunc( leftPart,therightareaid,true);
+          leftLines.push(leftPart);
+          rightLines.push(rightPart);
+        }
+      });
+
+      return {
+        leftLines,
+        rightLines
+      };
+   }
+
+   function checkPaste(event,right){
+    console.log("Checking pasting");
+    let textarea = document.getElementById(right);
+    
+    const pastedText = event.clipboardData.getData('text/plain');
+    const pastedNlCount= pastedText.split("\n").length;
+    
+    
+    const caretPosition = textarea.selectionStart;
+    const selectionEnd = textarea.selectionEnd;
+    const textareaValue = textarea.value;
+
+    const selectedText = textareaValue.substring(caretPosition, selectionEnd);
+    const selNlCount = selectedText.split("\n").length;
+    
+    console.log(pastedNlCount,selNlCount);
+
+    //You can ONLY paste if the number of new lines in the to-be-pasted text match
+    //the number of new lines in the selected text 
+    if (pastedNlCount != selNlCount) {
+         event.preventDefault();
+        }
+   }
+
+  function changeKeyBehaviour(event,right) {
+       let textarea = document.getElementById(right);
+       let eventctrlKey  = event.ctrlKey
+    
+      const caretPosition = textarea.selectionStart;
+      const selectionEnd = textarea.selectionEnd;
+      const textareaValue = textarea.value;
+
+
+      //You cannot remove a selection by typing a character.
+      if (caretPosition !== selectionEnd) {
+            const selectedText = textareaValue.substring(caretPosition, selectionEnd);
+            if (selectedText.includes('\n') &&  !(event.key.startsWith('Arrow')) && !eventctrlKey)  {
+                event.preventDefault();
+            }
+        }
+
+        //Backspace and Delete will not remove newline
+   if (event.key === 'Backspace' || event.key === 'Delete') {
+        
+
+        if (caretPosition !== selectionEnd) {
+            const selectedText = textareaValue.substring(caretPosition, selectionEnd);
+            if (selectedText.includes('\n')) {
+                event.preventDefault();
+            }
+        } else if (event.key === 'Backspace' && caretPosition > 0) {
+            const previousChar = textareaValue[caretPosition - 1];
+            if (previousChar === '\n') {
+                event.preventDefault();
+            }
+        } else if (event.key === 'Delete' && caretPosition < textareaValue.length) {
+            const nextChar = textareaValue[caretPosition];
+            if (nextChar === '\n') {
+                event.preventDefault();
+            }
+        }
+    }
+  
+  if (event.key === 'Enter') {
+            event.preventDefault();
+        //Will not allow newlines via keyboard    
+    }
+
+    
+   }
+
+   document.getElementById(theright).addEventListener('keydown', function(event){
+      changeKeyBehaviour(event,theright);
+  });
+
+  document.getElementById(theright).addEventListener('paste', function(event){
+    checkPaste(event,theright);
+  });
+
+   //For finding out current line 
+   let lastLine = 0;
+
+
+  function getCaretPosition(element) {
+    const position = element.selectionStart;
+    const lines = element.value.substr(0, position).split("\n");
+    return lines.length;
+  }
+
+
+  function checkCaretPosition() {
+    const currentLine = getCaretPosition(document.getElementById(theright));
+    
+    if (currentLine !== lastLine) {
+        //an external helper function tracks current line and you can provide
+        //a bit more help, or some more controls with that 
+        helpFunc(theleft,theright,currentLine);
+        lastLine = currentLine;
+    }
+  }
+
+   setInterval(checkCaretPosition, pollInterval);
+   document.getElementById(theright).addEventListener('click', checkCaretPosition);
+   document.getElementById(theright).addEventListener('keyup', checkCaretPosition);
+
+document.body.addEventListener('htmx:afterSwap', function(event) {
+  
+    let swappedContainer = event.detail.target; 
+   
+    //incase the same page has multiple HTMX activity, we need to know which one we are dealing with
+    if (swappedContainer.id === containerId){
+   // Select the swapped element using a specific selector (e.g., textarea)
+
+      let textarea = document.querySelector(`#${containerId} textarea`);
+
+    // If the textarea exists, add its attributes
+    // Why? The server returned back an HTML fragment with just the <textarea> element in it
+    // and NO attributes whatsoever 
+     if (textarea) {
+      textarea.id = theright;
+      textarea.name = 'toml'; //The name of the TOML-textarea is always 'toml'
+      textarea.className = 'right-textarea';
+      }
+    }
+
+  });
+
+
+function updateStyles(theright,numLines) {
+    // Calculate height based on 31px per line (30px gap + 1px line)
+    const height = numLines * 31;
+    //alert(height);
+    const ht =  `100% ${height}px`;
+    //alert(ht);
+    theright.style.backgroundSize = ht ;
+    theright.style.height = `${height}px`;
+    
+  }
+
+  function remakeLeft(obj,theleftTextarea) {
+        
+      
+        obj.leftLines.forEach((line, index) => {
+          line = line.trim();
+          if(!(line.startsWith("[") && line.endsWith("]"))) {
+            obj.leftLines[index] +=""
+          } else {
+            obj.leftLines[index] = '<span class="tomlobj" title="Do not give any value for this">'+line+'</span>'
+           }
+         })
+
+
+        theleftTextarea.innerHTML = obj.leftLines.join("\n");
+      }
+ 
+
+  
+  
+
+   obj= reconstructLeftSide(initContents,theright);
+   const rightElem = document.getElementById(theright);
+   if(insertData){
+    rightElem.value = obj.rightLines.join('\n');
+   } else {
+    rightElem.value ="\n".repeat(obj.rightLines.length - 1)  //just new lines
+   }
+
+   remakeLeft(obj,document.getElementById(theleft));
+   updateStyles(rightElem,obj.leftLines.length);
+
+}
+
+
+//This function is for validating the input
+//the second parameter is the id of the TOML textarea
+let validate= function(event,a) {
+    //alert(document.getElementById(a).value);
+    //alert("aborting..."+a);
+    //event.preventDefault();
+     
+}
+
+//This function is to be defined by you and it is needed
+//You can write a pithy help for each line in the TOML textarea
+//and/or give additional controls for that line 
+let doHelp=function(left,right,currentLine){
+  console.log(`Caret moved to line ${currentLine} in ${right}`);
+}
+
+//This function is to be defined by you and it is needed
+//It is for replacing the labels on leftside of the TOML textarea
+//Because the fieldnames in the TOML could be obtruse.
+let replaceLabel=function(leftWord,rightArea,isForLabel) {
+  if(isForLabel){
+   switch(leftWord){
+    //Make sure this matches the fieldnames used in the TOML
+    case "about": 
+        return "<b title='write something about'>About this</b>"
+    case "eml": 
+        return "<b title='email address'>E-Mail</b>"
+    case "url":
+        return "<b title='Your complete URL please'>Your website address</b>"
+    default:
+         return leftWord
+
+       } 
+     } 
+     
+  else {
+    switch (leftWord) 
+    {
+    //MAKE SURE THIS MATCHES THE FRIENDLY LABELS above!
+    case "About this": return "about" 
+    case "E-Mail": return "eml"
+    case "Your website address": return "url"
+    default: 
+      return leftWord
+    }  
+  
+  }
+}
+/*
+USAGE:
+   
+  There is only one function htmxTOMLJsonForm(...). It has 7 arguments (last one optional)
+
+   The 1st argument is of course the TOML data as a string. Note in my server, TOML strings need not 
+   be quoted -- my server does the quoting if so required. (But no harm if it is indeed quoted). However
+   nested string fields inside objects and lists must be quoted; unless they are flattened out so that 
+   they do not look nested e.g. the fieldname has dot in it (to indicate an object's field). 
+   
+   Also, TOML strings have to be only on one line. Multi-line strings are currently not supported.
+  
+   The 2nd argument is the id of the container of the TOML textarea. The innerHTML of that container 
+   is what gets replaced by HTMX
+   The 3rd argument is the id of the leftside element - one that shows the labels for the fields.
+   The 4th argument is the id of the actual TOML textarea -- one that contains the values.
+
+   Before calling this function, you must set the replaceLabel(...) and doHelp(...) functions as explained 
+   before and pointers to those functions should be given in the 5th and 6th arguments respectively.
+
+   The 7th argument is optional. If not given, it will be false. If true, the TOML textarea will get populated
+   with the TOML data you called it with. If not, only the left side of the TOML texatarea will get the labels;
+   and the TOML text area would contain the exact number of lines that are in the TOML data.
+
+   This kind of workflow where the user provides TOML data to the server is especially suitable for 
+   backends such as Pocketbase; which accepts a record in its database table in JSON format.
+
+*/
+  htmxTOMLJsonForm(
+    `about="aaa"
+explanation=aaa
+eml=aaa
+url=aaa
+[obj]
+a=aaa
+b=aaa
+c=aaa
+d=aaa
+e=aaa
+f=aaa
+h=aaa`,'tst','theleft','toml2',replaceLabel,doHelp,false);
+//In the above example; I put dummy data on right side of the equal-to sign for the TOML, as it is not used in the textarea.
+
+
+htmxTOMLJsonForm(
+
+//The TOML data. NOTE: strings that are not in nested/inline objects are not quoted in this example
+//only because my server does the quoting. My server expects strings only in one line.
+//But if you do quote strings, no harm (again handled by my server) Your server need to be written 
+//to add the required quotes for TOML strings. Remember that the TOML specs does not accept unquoted strings.
+
+`about=Muskrat, Muskrat Candle Light
+explanation=Doing the town and doing it right
+eml=test@example.com
+url=https://limenleap.com
+[obj]
+a=1
+b=2
+c=somemore@example.com
+d=true
+e=["aa","bb","cc"]
+f={ a ="aha", b ="baha"}
+g=[1,2,3,"aa","bb"]`,
+       
+  //As you can see above, strings in stringlists and in inline object HAVE To be quoted. My server 
+  //handles the auto-quoting of strings only for flattened string fields; not otherwise.
+
+  'tst2','theleft2','toml3',replaceLabel,doHelp,true);
+
+/*
+Sample TOML values: 
+
+If you copy the exact number of lines as present in the TOML texarea text selection, 
+you should be able to paste it into the TOML texarea. Else copy-paste is not allowed.
+
+Muskrat, Muskrat Candle Light
+Doing the town and doing it right
+test@example.com
+https://limenleap.com
+
+1
+2
+somemore@example.com
+true
+["aa","bb","cc"]
+{ a ="aha", b ="baha"}
+[1,2,3,"aa","bb"]
+
+
+*/
+
+    </script>
+
+
+  
+  
+  </body>
+</html>
