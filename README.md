@@ -20,6 +20,9 @@ tested this reasonably well. Your experience may vary.
 The actual docs are in the HTML source: The source has the force, Luke.
 Read ALL the comments and I think you should be good to go.
 
+This HTMX-TOML editor is quite useful for Pocketbase servers. I can 
+create and update Pocketbase collections records quite well with this.
+
 I will create other kinds of front-ends too; as and when I get the time.
 
 Enjoy.
