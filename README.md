@@ -1,7 +1,7 @@
 # HTMX-FrontEnd
 Here are some frontend examples for productive, rapid use of HTMX.
 
-To begin with I developed a simple TOML "Editor" by working on simple HTML Textarea 
+To begin with I developed a simple TOML "Editor" by working on a simple HTML Textarea 
 
 ### But why?
 
