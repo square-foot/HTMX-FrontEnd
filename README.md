@@ -20,4 +20,7 @@ tested this reasonably well. Your experience may vary.
 The actual docs are in the HTML source: The source has the force, Luke.
 Read ALL the comments and I think you should be good to go.
 
+I will create other kinds of front-ends too; as and when I get the time.
+
+Enjoy.
 Best wishes.
