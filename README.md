@@ -19,6 +19,9 @@ would give hints to the user (as can be seen in the screenshot) etc.
 So as a start, here is a simple method by which the user can send a TOML data 
 to a server -- and TOML is quite good to capture a lot of complex JSON obj.
 
+(The sample file has 2 such TOML forms, just to check if multiple forms can
+work from the same HTML page)
+
 According to me, this is simple and quite useful. Your experience may vary.
 This was written in a day, and so expect some errors. But I think I have
 tested this reasonably well. 
