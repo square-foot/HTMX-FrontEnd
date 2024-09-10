@@ -33,7 +33,8 @@ rest of the things I do, instead of being stuck in coding.
 
 ### How it works...
 
-I am replacing an entire HTML form with one specialized textarea. It accepts data structured in TOML -- the reason is I am quite tired of creating separate input boxes and beautifying them -- gets tiresome when dealing with large amount of input. E.g. If you want to send the following JSON to the server; where value of each field has to be obtained from the user: e.g.
+I am replacing an entire HTML form with one specialized textarea. It accepts data structured in TOML. 
+E.g. If you want to send the following JSON to the server; where value of each field has to be obtained from the user: e.g.
 ```
 {name: "xyz", age: 63, address: {first: "adsfadfdfd", city: "Mumbai", country: "India"},...}
 ```
