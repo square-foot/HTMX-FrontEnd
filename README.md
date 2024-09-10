@@ -10,6 +10,12 @@ and time involved in them. Then I thought how about emulating a simple ruled pap
 After all, when we fill data manually (i.e. without a computer) we simply tear
 a ruled paper and enter the data systematically one below the other on those lines.
 
+Here is a screenshot. You can beautify the labels, place "title" on them so that 
+would give hints to the user (as can be seen in the screenshot) etc.
+
+![image](https://github.com/user-attachments/assets/298c7293-4a22-44c9-8016-9ea23aa1c455)
+
+
 So as a start, here is a simple method by which the user can send a TOML data 
 to a server -- and TOML is quite good to capture a lot of complex JSON obj.
 
