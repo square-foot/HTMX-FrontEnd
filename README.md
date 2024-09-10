@@ -31,6 +31,29 @@ I mentioned Pocketbase because that is one technology I really like
 and this was tested in that backend: I can easily get back to the 
 rest of the things I do, instead of being stuck in coding.
 
+### How it works...
+
+I am replacing an entire HTML form with one specialized textarea. It accepts data structured in TOML -- the reason is I am quite tired of creating separate input boxes and beautifying them -- gets tiresome when dealing with large amount of input. E.g. If you want to send the following JSON to the server; where value of each field has to be obtained from the user: e.g.
+```
+{name: "xyz", age: 63, address: {first: "adsfadfdfd", city: "Mumbai", country: "India"},...}
+```
+It can even have nested objects ... then you can express it in TOML as:
+
+```
+name = "xyz"
+age = 63
+address.first = "adsfadfdfd"
+address.city = "Mumbai"
+address.country = "India"
+....
+```
+
+In above case the page can get filled with input boxes, etc. In case of my TOML editor I can capture all that in one textarea with prompts on the left side. And you give just the values (i.e. after the equal-to sign of each line) into the textarea.It can even handle validation and provide additional help for each line the caret happens to be on.
+
+The textarea has ruled lines to guide the user, and won't accept newlines and wont allow you to delete newlines (thus preventing badly formatted TOML) It behaves like a set of inputs one below the other. Works quite well on small screens. My server even handles the TOML without strings quoted. My server adds the required quotes where absent. So it is quite natural and easy to type into that textarea.
+
+You can simply load the given HTML file into a browser and you can see it in action. I believe in rapid agile development, so this is just the first of possibly many more iterations.
+
 I will create other kinds of front-ends too; as and when I get the time.
 
 Enjoy.
